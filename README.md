@@ -5,7 +5,7 @@ Aplicación de bingo musical creada con Vue 3 y Vuetify. Reproduce fragmentos de
 ## Requisitos previos
 
 - Node.js 18 o superior
-- Yarn 1.22 (Classic)
+- Yarn 1.22 o superior (se recomienda habilitar Corepack)
 
 ## Puesta en marcha
 
