@@ -1,83 +1,40 @@
 <template>
   <v-app class="neon-app">
     <v-main>
-      <v-container class="py-10 neon-container" fluid>
+      <v-container class="py-4 neon-container fill-vh" fluid>
         <div class="lighting lighting--one"></div>
         <div class="lighting lighting--two"></div>
-        <v-row justify="center" align="stretch" class="g-8">
-          <v-col cols="12" md="8">
-            <v-card elevation="18" class="pa-6 neon-card control-card" rounded="xl">
+
+        <v-row justify="center" align="start" class="g-8 center-stage">
+          <v-col cols="12" md="9" lg="10">
+            <v-card
+              elevation="18"
+              class="pa-4 neon-card control-card"
+              rounded="xl"
+            >
               <v-card-title class="neon-title mb-2">
-                <span class="title-highlight">Hit</span>ster Bingo Musical
+                Bin<span class="title-highlight">go</span> Musical
               </v-card-title>
-              <v-card-subtitle class="neon-subtitle mb-6">
-                Reproduce 30 segundos de canciones aleatorias y descubre quién canta bingo primero.
-              </v-card-subtitle>
 
               <v-card-text class="pa-0">
                 <div class="d-flex flex-column ga-6">
-                  <div class="d-flex flex-wrap ga-4">
-                    <v-btn
-                      color="primary"
-                      size="large"
-                      class="glow-btn"
-                      :disabled="!canStart || isRunning"
-                      @click="startBingo"
-                    >
-                      Iniciar
-                    </v-btn>
-                    <v-btn
-                      color="secondary"
-                      size="large"
-                      class="glow-btn glow-btn--outline"
-                      variant="outlined"
-                      :disabled="!isRunning"
-                      @click="pauseBingo"
-                    >
-                      Pausa
-                    </v-btn>
+                  <div class="video-wrapper centered-video" v-if="videoReady">
+                    <div class="video-stage">
+                      <transition name="crossfade" mode="out-in">
+                        <iframe
+                          v-if="videoSrc"
+                          :key="videoKey"
+                          :src="videoSrc"
+                          loading="eager"
+                          class="video-iframe"
+                          title="Reproducción de canción"
+                          allow="autoplay; encrypted-media; accelerometer"
+                          allowfullscreen
+                        ></iframe>
+                      </transition>
+                    </div>
                   </div>
 
-                  <div class="status-panel neon-panel">
-                    <template v-if="isLoading">
-                      <div class="d-flex align-center ga-3">
-                        <v-progress-circular indeterminate color="primary" />
-                        <span>Cargando canciones...</span>
-                      </div>
-                    </template>
-                    <template v-else-if="loadError">
-                      <v-alert type="error" border="start" prominent>
-                        No fue posible cargar las canciones. {{ loadError }}
-                      </v-alert>
-                    </template>
-                    <template v-else>
-                      <div class="d-flex flex-column ga-1">
-                        <div class="text-subtitle-2">
-                          Canciones cargadas: {{ songs.length }} | Restantes: {{ remainingSongsCount }}
-                        </div>
-                        <div v-if="hasCompleted" class="text-success text-subtitle-1 font-weight-medium">
-                          ¡Todas las canciones han sonado!
-                        </div>
-                        <div v-else-if="currentSong">
-                          <span class="text-h6 font-weight-medium">
-                            Sonando: {{ currentSong.nombre }}
-                          </span>
-                        </div>
-                      </div>
-                    </template>
-                  </div>
-
-                  <div class="video-wrapper" v-if="videoReady">
-                    <v-responsive aspect-ratio="16/9" class="video-stage">
-                      <iframe
-                        :key="videoKey"
-                        :src="videoSrc"
-                        title="Reproducción de canción"
-                        allow="autoplay; encrypted-media; accelerometer"
-                        allowfullscreen
-                      ></iframe>
-                    </v-responsive>
-                  </div>
                   <v-sheet
                     v-else
                     class="d-flex align-center justify-center text-center py-12 neon-panel waiting-panel"
@@ -86,37 +43,69 @@
                     elevation="6"
                   >
                     <div class="text-body-1 font-weight-medium">
-                      Presiona <strong>Iniciar</strong> para comenzar la primera canción del bingo.
+                      Presiona <strong>Iniciar</strong> para comenzar la primera
+                      canción del bingo.
                     </div>
                   </v-sheet>
-
-                  <div class="equalizer">
-                    <span v-for="bar in 5" :key="`bar-${bar}`" class="equalizer__bar"></span>
-                  </div>
                 </div>
               </v-card-text>
             </v-card>
           </v-col>
 
-          <v-col cols="12" md="4">
-            <v-card elevation="16" class="pa-5 neon-card numbers-card" rounded="xl">
-              <v-card-title class="text-h5 font-weight-bold pb-3 numbers-title">
-                Números cantados
-              </v-card-title>
-              <v-divider class="mb-5 neon-divider"></v-divider>
-              <div class="numbers-grid" v-if="drawnNumbers.length">
+          <v-col cols="12" md="3" lg="2">
+            <v-card
+              elevation="16"
+              class="pa-5 neon-card numbers-card"
+              rounded="xl"
+            >
+              <transition name="slide-fade" mode="out-in">
+                <div
+                  v-if="currentSong"
+                  key="current-song"
+                  class="current-number-block neon-panel mb-4"
+                >
+                  <div class="current-number-label">Sonando ahora</div>
+                  <div class="current-number-value">
+                    {{ currentSong.numero }}
+                  </div>
+                  <div class="current-number-title text-subtitle-2">
+                    {{ currentSong.nombre }}
+                  </div>
+                </div>
+              </transition>
+
+              <transition-group
+                name="chip-pop"
+                tag="div"
+                class="numbers-grid"
+                v-if="drawnNumbers.length"
+                :style="numbersGridStyle"
+              >
                 <v-chip
-                  v-for="(number, index) in drawnNumbers"
-                  :key="`number-${number}-${index}`"
+                  v-for="number in drawnNumbers"
+                  :key="`number-${number}`"
                   color="accent"
                   variant="elevated"
                   class="ma-1 text-subtitle-2 neon-chip"
                 >
                   {{ number }}
                 </v-chip>
-              </div>
+              </transition-group>
+
               <div v-else class="text-body-2 text-medium-emphasis">
-                Aún no se ha cantado ningún número. ¡Sé el primero en escuchar tu canción!
+                Aún no se ha cantado ningún número. ¡Sé el primero en escuchar
+                tu canción!
+              </div>
+
+              <div class="d-flex flex-wrap ga-4 mt-4 numbers-controls">
+                <v-btn
+                  color="primary"
+                  size="large"
+                  class="glow-btn"
+                  :disabled="!canStart || isRunning"
+                  @click="startBingo"
+                  >Iniciar</v-btn
+                >
               </div>
             </v-card>
           </v-col>
@@ -127,19 +116,19 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 
 const songs = ref([]);
 const drawnNumbers = ref([]);
 const currentSong = ref(null);
-const videoSrc = ref('');
+const videoSrc = ref("");
 const videoKey = ref(0);
 const isRunning = ref(false);
 const isLoading = ref(true);
-const loadError = ref('');
+const loadError = ref("");
 let songTimeoutId = null;
 
-const songsUrl = '/songs.json';
+const songsUrl = "/songs.json";
 
 const fetchSongs = async () => {
   try {
@@ -150,7 +139,7 @@ const fetchSongs = async () => {
     const data = await response.json();
     songs.value = Array.isArray(data) ? data : [];
   } catch (error) {
-    console.error('Error cargando canciones', error);
+    console.error("Error cargando canciones", error);
     loadError.value = error instanceof Error ? error.message : String(error);
   } finally {
     isLoading.value = false;
@@ -160,14 +149,14 @@ const fetchSongs = async () => {
 const extractVideoId = (url) => {
   try {
     const parsed = new URL(url);
-    if (parsed.hostname.includes('youtu.be')) {
+    if (parsed.hostname.includes("youtu.be")) {
       return parsed.pathname.slice(1);
     }
-    if (parsed.searchParams.has('v')) {
-      return parsed.searchParams.get('v');
+    if (parsed.searchParams.has("v")) {
+      return parsed.searchParams.get("v");
     }
-    const segments = parsed.pathname.split('/');
-    const embedIndex = segments.findIndex((segment) => segment === 'embed');
+    const segments = parsed.pathname.split("/");
+    const embedIndex = segments.findIndex((segment) => segment === "embed");
     if (embedIndex !== -1 && segments[embedIndex + 1]) {
       return segments[embedIndex + 1];
     }
@@ -176,9 +165,9 @@ const extractVideoId = (url) => {
     if (fallback) {
       return fallback[0];
     }
-    console.warn('No se pudo extraer el ID de YouTube de la URL:', url, error);
+    console.warn("No se pudo extraer el ID de YouTube de la URL:", url, error);
   }
-  return '';
+  return "";
 };
 
 const buildVideoUrl = (song) => {
@@ -186,13 +175,12 @@ const buildVideoUrl = (song) => {
   const startSeconds = Number(song.segundoInicial) || 0;
   const params = new URLSearchParams({
     start: String(startSeconds),
-    autoplay: '1',
-    controls: '0',
-    modestbranding: '1',
-    rel: '0',
-    playsinline: '1',
+    autoplay: "1",
+    controls: "0",
+    modestbranding: "1",
+    rel: "0",
+    playsinline: "1",
   });
-
   return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
 };
 
@@ -206,24 +194,28 @@ const scheduleNextSong = () => {
 };
 
 const playSongVideo = (song) => {
-  if (!song) {
-    videoSrc.value = '';
+  if (!song || !song.url) {
+    currentSong.value = song || null;
+    videoSrc.value = "";
     return;
   }
-  const url = buildVideoUrl(song);
-  videoKey.value += 1;
-  videoSrc.value = `${url}&vkey=${videoKey.value}`;
+
+  currentSong.value = song;
+  if (!drawnNumbers.value.includes(song.numero)) {
+    drawnNumbers.value.push(song.numero);
+  }
+
+  // asignamos la URL directamente al iframe
+  videoSrc.value = buildVideoUrl(song);
+  videoKey.value++;
 };
 
 const playNextSong = () => {
-  if (!songs.value.length) {
-    return;
-  }
+  if (!songs.value.length) return;
 
   const pendingSongs = songs.value.filter(
-    (song) => !drawnNumbers.value.includes(song.numero)
+    (s) => !drawnNumbers.value.includes(s.numero)
   );
-
   if (!pendingSongs.length) {
     finishBingo();
     return;
@@ -232,21 +224,20 @@ const playNextSong = () => {
   const randomIndex = Math.floor(Math.random() * pendingSongs.length);
   const nextSong = pendingSongs[randomIndex];
 
+  // actualizar estado y reproducir
   drawnNumbers.value.push(nextSong.numero);
   currentSong.value = nextSong;
-
   playSongVideo(nextSong);
   scheduleNextSong();
 };
 
 const startBingo = () => {
-  if (!songs.value.length || isRunning.value) {
-    return;
-  }
+  if (!songs.value.length || isRunning.value) return;
 
   if (drawnNumbers.value.length === songs.value.length) {
     drawnNumbers.value.splice(0, drawnNumbers.value.length);
     currentSong.value = null;
+    videoSrc.value = "";
   }
 
   isRunning.value = true;
@@ -261,33 +252,50 @@ const startBingo = () => {
 };
 
 const pauseBingo = () => {
-  if (!isRunning.value) {
-    return;
-  }
-
+  if (!isRunning.value) return;
   isRunning.value = false;
   clearTimeout(songTimeoutId);
-  videoSrc.value = '';
+  // detener reproducción limpiando src para que iframe deje de reproducir
+  videoSrc.value = "";
   videoKey.value += 1;
 };
 
 const finishBingo = () => {
   isRunning.value = false;
   clearTimeout(songTimeoutId);
-  videoSrc.value = '';
+  videoSrc.value = "";
 };
 
-const canStart = computed(() => !isLoading.value && !loadError.value && songs.value.length > 0);
-const hasCompleted = computed(
-  () => !isLoading.value && songs.value.length > 0 && drawnNumbers.value.length === songs.value.length
+// computeds
+const canStart = computed(
+  () => !isLoading.value && !loadError.value && songs.value.length > 0
 );
-const remainingSongsCount = computed(() => Math.max(songs.value.length - drawnNumbers.value.length, 0));
+const hasCompleted = computed(
+  () =>
+    !isLoading.value &&
+    songs.value.length > 0 &&
+    drawnNumbers.value.length === songs.value.length
+);
+const remainingSongsCount = computed(() =>
+  Math.max(songs.value.length - drawnNumbers.value.length, 0)
+);
 const videoReady = computed(() => Boolean(videoSrc.value));
+
+const chipSize = computed(() => {
+  const n = drawnNumbers.value.length;
+  if (n <= 6) return 120;
+  if (n <= 12) return 88;
+  if (n <= 24) return 64;
+  if (n <= 40) return 48;
+  return 36;
+});
+const numbersGridStyle = computed(() => ({
+  "--chip-size": `${chipSize.value}px`,
+}));
 
 onMounted(async () => {
   await fetchSongs();
 });
-
 onBeforeUnmount(() => {
   clearTimeout(songTimeoutId);
 });
@@ -302,7 +310,8 @@ onBeforeUnmount(() => {
 .neon-container {
   position: relative;
   isolation: isolate;
-  min-height: 100%;
+  min-height: 100vh;
+  overflow: hidden;
 }
 
 .lighting {
@@ -313,13 +322,11 @@ onBeforeUnmount(() => {
   filter: blur(120px);
   z-index: 0;
 }
-
 .lighting--one {
   top: -120px;
   left: -80px;
   background: rgba(255, 0, 128, 0.55);
 }
-
 .lighting--two {
   right: -120px;
   bottom: -120px;
@@ -329,50 +336,30 @@ onBeforeUnmount(() => {
 .neon-card {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(145deg, rgba(22, 12, 61, 0.92), rgba(44, 16, 106, 0.8));
+  background: linear-gradient(
+    145deg,
+    rgba(22, 12, 61, 0.92),
+    rgba(44, 16, 106, 0.8)
+  );
   border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 25px 45px rgba(2, 0, 36, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  box-shadow: 0 25px 45px rgba(2, 0, 36, 0.45),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(18px);
   z-index: 1;
 }
 
-.neon-card::after {
-  content: '';
-  position: absolute;
-  inset: -60% -40% auto;
-  height: 120%;
-  background: radial-gradient(circle, rgba(255, 0, 204, 0.4), transparent 55%);
-  opacity: 0.35;
-  pointer-events: none;
-}
-
-.control-card::after {
-  inset: auto -40% -60%;
-  background: radial-gradient(circle, rgba(0, 255, 255, 0.25), transparent 65%);
-}
-
 .neon-title {
-  font-family: 'Monoton', cursive;
+  font-family: "Monoton", cursive;
   font-size: clamp(2.4rem, 4vw, 3rem);
   letter-spacing: 0.25em;
-  text-transform: uppercase;
-  color: #f8f3ff;
-  text-shadow: 0 0 10px rgba(255, 80, 190, 0.9), 0 0 25px rgba(255, 80, 190, 0.7),
-    0 0 40px rgba(255, 80, 190, 0.35);
+  color: #ff7cf4;
+  text-shadow: 0 0 12px rgba(255, 171, 255, 0.9);
   display: flex;
-  align-items: center;
   gap: 0.45rem;
 }
-
 .title-highlight {
   color: #45f6ff;
-  text-shadow: 0 0 12px rgba(69, 246, 255, 0.9), 0 0 30px rgba(69, 246, 255, 0.6);
-}
-
-.neon-subtitle {
-  color: rgba(216, 219, 255, 0.9);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  text-shadow: 0 0 12px rgba(69, 246, 255, 0.9);
 }
 
 .glow-btn {
@@ -384,153 +371,202 @@ onBeforeUnmount(() => {
   background: linear-gradient(135deg, #ff008c, #ff5f5f);
   color: #fff !important;
   box-shadow: 0 18px 35px rgba(255, 0, 140, 0.35);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-
 .glow-btn--outline {
   background: transparent;
   color: #5ff3ff !important;
   border: 2px solid rgba(95, 243, 255, 0.65);
-  box-shadow: 0 18px 30px rgba(95, 243, 255, 0.25);
-}
-
-.glow-btn:hover {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 22px 40px rgba(255, 0, 140, 0.45);
-}
-
-.glow-btn--outline:hover {
-  box-shadow: 0 22px 40px rgba(95, 243, 255, 0.35);
-  background: linear-gradient(135deg, rgba(95, 243, 255, 0.2), rgba(95, 243, 255, 0.05));
-}
-
-.status-panel {
-  min-height: 90px;
-}
-
-.neon-panel {
-  background: rgba(14, 8, 47, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 18px;
-  padding: 1.25rem 1.5rem;
-  box-shadow: inset 0 0 30px rgba(255, 255, 255, 0.08);
-}
-
-.waiting-panel {
-  font-size: 1.05rem;
-  line-height: 1.6;
 }
 
 .video-wrapper {
   overflow: hidden;
   border-radius: 20px;
   box-shadow: 0 25px 45px rgba(8, 0, 30, 0.6);
+  width: 100%;
+  height: min(82vh, 1000px);
+  min-height: 480px;
+  max-height: calc(100vh - 110px);
+  margin: 0 auto;
+}
+
+.center-stage {
+  min-height: auto;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 4px;
 }
 
 .video-stage {
+  height: 100%;
+  width: 100%;
   border-radius: inherit;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
-  background: linear-gradient(145deg, rgba(12, 5, 46, 0.9), rgba(27, 9, 66, 0.8));
-}
-
-.equalizer {
+  background: linear-gradient(
+    145deg,
+    rgba(12, 5, 46, 0.9),
+    rgba(27, 9, 66, 0.8)
+  );
+  overflow: hidden;
   display: flex;
+  align-items: center;
   justify-content: center;
-  gap: 10px;
-  margin-top: 10px;
 }
 
-.equalizer__bar {
-  width: 12px;
-  height: 44px;
-  border-radius: 8px;
-  background: linear-gradient(180deg, #5ff3ff 0%, #ff67ff 50%, #ffcf64 100%);
-  box-shadow: 0 0 10px rgba(95, 243, 255, 0.5);
-  animation: equalize 1.3s ease-in-out infinite;
-  transform-origin: bottom;
+.video-iframe {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+  border: 0;
+  min-height: 420px;
+  background: linear-gradient(
+    180deg,
+    rgba(10, 10, 20, 0.6),
+    rgba(20, 15, 40, 0.6)
+  );
+  will-change: opacity, transform;
 }
 
-.equalizer__bar:nth-child(2) {
-  animation-delay: 0.2s;
+/* numbers column and chips */
+.numbers-col {
+  display: flex;
+  align-items: flex-start;
 }
-
-.equalizer__bar:nth-child(3) {
-  animation-delay: 0.4s;
-}
-
-.equalizer__bar:nth-child(4) {
-  animation-delay: 0.6s;
-}
-
-.equalizer__bar:nth-child(5) {
-  animation-delay: 0.8s;
-}
-
 .numbers-card {
   height: 100%;
   display: flex;
   flex-direction: column;
+  max-height: calc(100vh - 120px);
+  overflow: hidden;
 }
-
-.numbers-title {
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  color: rgba(236, 248, 255, 0.92);
-}
-
-.neon-divider {
-  opacity: 0.5;
-  border-color: rgba(255, 255, 255, 0.25) !important;
-}
-
 .numbers-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 0.45rem;
+  justify-content: flex-start;
+  align-items: flex-start;
+  --chip-size: 88px;
 }
-
 .neon-chip {
-  background: linear-gradient(135deg, rgba(95, 243, 255, 0.2), rgba(255, 103, 255, 0.25));
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  color: #fdfcff !important;
-  box-shadow: 0 12px 24px rgba(69, 246, 255, 0.22);
+  min-width: var(--chip-size, 88px);
+  max-width: calc(var(--chip-size, 88px) * 1.4);
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.45rem 0.75rem;
+  font-size: clamp(0.8rem, calc(var(--chip-size, 88px) / 12), 1.05rem);
+  border-radius: 12px;
+  transition: all 180ms ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-:deep(.v-alert) {
-  background: rgba(255, 83, 130, 0.12);
-  border: 1px solid rgba(255, 83, 130, 0.35);
-  color: #ff9bbd;
+.current-number-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 1rem 0.8rem;
+  border-radius: 14px;
+  text-align: center;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.03),
+    rgba(255, 255, 255, 0.01)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
 }
 
-:deep(.v-progress-circular__underlay),
-:deep(.v-progress-circular__overlay) {
-  stroke: rgba(95, 243, 255, 0.65);
+.current-number-label {
+  font-size: 0.75rem;
+  color: rgba(225, 230, 255, 0.75);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.current-number-value {
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+  font-size: clamp(2.6rem, 6vw, 4.8rem);
+  text-shadow: 0 6px 30px rgba(69, 246, 255, 0.12);
+}
+.current-number-title {
+  font-size: 0.9rem;
+  color: rgba(220, 225, 255, 0.9);
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-@keyframes equalize {
-  0%,
-  100% {
-    transform: scaleY(0.3);
-  }
-  50% {
-    transform: scaleY(1);
-  }
+.numbers-controls {
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+/* transitions */
+.crossfade-enter-active,
+.crossfade-leave-active {
+  transition: opacity 700ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.crossfade-enter-from,
+.crossfade-leave-to {
+  opacity: 0;
+  transform: scale(0.992);
+}
+.crossfade-enter-to,
+.crossfade-leave-from {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: opacity 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.slide-fade-enter-from {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+.slide-fade-enter-to {
+  opacity: 1;
+  transform: translateY(0);
+}
+.slide-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+.chip-pop-enter-active {
+  transition: transform 360ms cubic-bezier(0.22, 1, 0.36, 1), opacity 360ms ease;
+}
+.chip-pop-leave-active {
+  transition: opacity 260ms ease, transform 260ms ease;
+}
+.chip-pop-enter-from {
+  opacity: 0;
+  transform: translateY(-6px) scale(0.94);
+}
+.chip-pop-enter-to {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+.chip-pop-leave-to {
+  opacity: 0;
+  transform: translateY(-6px) scale(0.96);
 }
 
 @media (max-width: 960px) {
-  .neon-title {
-    justify-content: center;
-    text-align: center;
+  .video-wrapper {
+    height: 46vh;
+    min-height: 180px;
+    max-height: calc(100vh - 140px);
   }
-
-  .neon-subtitle {
-    text-align: center;
-  }
-
-  .lighting--one,
-  .lighting--two {
-    opacity: 0.6;
-    filter: blur(160px);
+  .control-card {
+    padding: 12px !important;
   }
 }
 </style>
