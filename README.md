@@ -5,13 +5,13 @@ Aplicación de bingo musical creada con Vue 3 y Vuetify. Reproduce fragmentos de
 ## Requisitos previos
 
 - Node.js 18 o superior
-- npm 9 o superior
+- Yarn 1.22 (Classic)
 
 ## Puesta en marcha
 
 ```bash
-npm install
-npm run dev
+yarn install
+yarn dev
 ```
 
 La aplicación quedará disponible en `http://localhost:5173`.
@@ -19,10 +19,12 @@ La aplicación quedará disponible en `http://localhost:5173`.
 ## Construir para producción
 
 ```bash
-npm run build
+yarn build
 ```
 
 Los archivos generados se encontrarán en `dist/`.
+
+> **Importante:** Usar siempre yarn. No usar npm para instalar dependencias ni ejecutar scripts.
 
 ## Datos del bingo
 

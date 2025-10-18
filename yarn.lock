@@ -1,0 +1,3 @@
+# Placeholder lockfile. Ejecuta `yarn install` (Yarn Classic 1.22.x)
+# en un entorno con acceso al registro npm para generar el contenido
+# real y asegurar builds deterministas.
