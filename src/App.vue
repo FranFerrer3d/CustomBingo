@@ -20,6 +20,7 @@
                 <div class="d-flex flex-column ga-6">
                   <div class="d-flex flex-wrap ga-4">
                     <v-btn
+                      class="glow-btn"
                       color="primary"
                       size="large"
                       class="glow-btn"
@@ -29,6 +30,7 @@
                       Iniciar
                     </v-btn>
                     <v-btn
+                      class="glow-btn glow-btn--outline"
                       color="secondary"
                       size="large"
                       class="glow-btn glow-btn--outline"
@@ -48,23 +50,21 @@
                       </div>
                     </template>
                     <template v-else-if="loadError">
-                      <v-alert type="error" border="start" prominent>
+                      <v-alert border="start" prominent type="error">
                         No fue posible cargar las canciones. {{ loadError }}
                       </v-alert>
                     </template>
                     <template v-else>
                       <div class="d-flex flex-column ga-1">
-                        <div class="text-subtitle-2">
+                        <span class="text-subtitle-2">
                           Canciones cargadas: {{ songs.length }} | Restantes: {{ remainingSongsCount }}
-                        </div>
-                        <div v-if="hasCompleted" class="text-success text-subtitle-1 font-weight-medium">
+                        </span>
+                        <span v-if="hasCompleted" class="text-success text-subtitle-1 font-weight-medium">
                           ¡Todas las canciones han sonado!
-                        </div>
-                        <div v-else-if="currentSong">
-                          <span class="text-h6 font-weight-medium">
-                            Sonando: {{ currentSong.nombre }}
-                          </span>
-                        </div>
+                        </span>
+                        <span v-else-if="currentSong" class="text-h6 font-weight-medium">
+                          Sonando: {{ currentSong.nombre }}
+                        </span>
                       </div>
                     </template>
                   </div>
@@ -109,6 +109,7 @@
                 <v-chip
                   v-for="(number, index) in drawnNumbers"
                   :key="`number-${number}-${index}`"
+                  class="ma-1 text-subtitle-2 neon-chip"
                   color="accent"
                   variant="elevated"
                   class="ma-1 text-subtitle-2 neon-chip"
@@ -116,9 +117,9 @@
                   {{ number }}
                 </v-chip>
               </div>
-              <div v-else class="text-body-2 text-medium-emphasis">
+              <p v-else class="text-body-2 text-medium-emphasis numbers-empty">
                 Aún no se ha cantado ningún número. ¡Sé el primero en escuchar tu canción!
-              </div>
+              </p>
             </v-card>
           </v-col>
         </v-row>
@@ -143,6 +144,9 @@ let songTimeoutId = null;
 let transitionTimeoutId = null;
 let transitionResetTimeoutId = null;
 
+const SONG_DURATION_MS = 30_000;
+const TRANSITION_DELAY_MS = 450;
+const TRANSITION_RESET_MS = 1_100;
 const songsUrl = '/songs.json';
 
 const fetchSongs = async () => {
@@ -151,6 +155,7 @@ const fetchSongs = async () => {
     if (!response.ok) {
       throw new Error(`Estado ${response.status}`);
     }
+
     const data = await response.json();
     songs.value = Array.isArray(data) ? data : [];
   } catch (error) {
@@ -164,12 +169,15 @@ const fetchSongs = async () => {
 const extractVideoId = (url) => {
   try {
     const parsed = new URL(url);
+
     if (parsed.hostname.includes('youtu.be')) {
       return parsed.pathname.slice(1);
     }
+
     if (parsed.searchParams.has('v')) {
       return parsed.searchParams.get('v');
     }
+
     const segments = parsed.pathname.split('/');
     const embedIndex = segments.findIndex((segment) => segment === 'embed');
     if (embedIndex !== -1 && segments[embedIndex + 1]) {
@@ -182,6 +190,7 @@ const extractVideoId = (url) => {
     }
     console.warn('No se pudo extraer el ID de YouTube de la URL:', url, error);
   }
+
   return '';
 };
 
@@ -200,13 +209,24 @@ const buildVideoUrl = (song) => {
   return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
 };
 
+const clearTransitionTimers = () => {
+  clearTimeout(transitionTimeoutId);
+  clearTimeout(transitionResetTimeoutId);
+};
+
 const scheduleNextSong = () => {
   clearTimeout(songTimeoutId);
   songTimeoutId = setTimeout(() => {
     if (isRunning.value) {
       playNextSong();
     }
-  }, 30000);
+  }, SONG_DURATION_MS);
+};
+
+const updateVideoSource = (song) => {
+  const url = buildVideoUrl(song);
+  videoKey.value += 1;
+  videoSrc.value = `${url}&vkey=${videoKey.value}`;
 };
 
 const clearTransitionTimers = () => {
@@ -245,9 +265,7 @@ const playNextSong = () => {
     return;
   }
 
-  const pendingSongs = songs.value.filter(
-    (song) => !drawnNumbers.value.includes(song.numero)
-  );
+  const pendingSongs = songs.value.filter((song) => !drawnNumbers.value.includes(song.numero));
 
   if (!pendingSongs.length) {
     finishBingo();
@@ -308,10 +326,40 @@ const finishBingo = () => {
 
 const canStart = computed(() => !isLoading.value && !loadError.value && songs.value.length > 0);
 const hasCompleted = computed(
-  () => !isLoading.value && songs.value.length > 0 && drawnNumbers.value.length === songs.value.length
+  () => !isLoading.value && songs.value.length > 0 && drawnNumbers.value.length === songs.value.length,
 );
 const remainingSongsCount = computed(() => Math.max(songs.value.length - drawnNumbers.value.length, 0));
 const videoReady = computed(() => Boolean(videoSrc.value));
+const chipStyle = computed(() => {
+  const count = drawnNumbers.value.length;
+
+  if (!count) {
+    return {};
+  }
+
+  let fontSize = 1.2;
+
+  if (count <= 5) {
+    fontSize = 1.8;
+  } else if (count <= 10) {
+    fontSize = 1.5;
+  } else if (count <= 20) {
+    fontSize = 1.25;
+  } else if (count <= 35) {
+    fontSize = 1.1;
+  } else {
+    fontSize = 1;
+  }
+
+  const verticalPadding = 0.35 * fontSize;
+  const horizontalPadding = 0.75 * fontSize;
+
+  return {
+    fontSize: `${fontSize}rem`,
+    padding: `${verticalPadding}rem ${horizontalPadding}rem`,
+  };
+});
+
 const chipStyle = computed(() => {
   const count = drawnNumbers.value.length;
 
