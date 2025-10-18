@@ -23,7 +23,6 @@
                       class="glow-btn"
                       color="primary"
                       size="large"
-                      class="glow-btn"
                       :disabled="!canStart || isRunning"
                       @click="startBingo"
                     >
@@ -33,7 +32,6 @@
                       class="glow-btn glow-btn--outline"
                       color="secondary"
                       size="large"
-                      class="glow-btn glow-btn--outline"
                       variant="outlined"
                       :disabled="!isRunning"
                       @click="pauseBingo"
@@ -112,7 +110,6 @@
                   class="ma-1 text-subtitle-2 neon-chip"
                   color="accent"
                   variant="elevated"
-                  class="ma-1 text-subtitle-2 neon-chip"
                 >
                   {{ number }}
                 </v-chip>
