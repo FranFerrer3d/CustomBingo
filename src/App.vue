@@ -14,6 +14,8 @@
                 Reproduce 30 segundos de canciones aleatorias y descubre quién canta bingo primero.
               </v-card-subtitle>
 
+          <v-col cols="12" xl="4" class="d-flex flex-column ga-6">
+            <v-card elevation="18" class="pa-6 neon-card control-card" rounded="xl">
               <v-card-text class="pa-0">
                 <div class="d-flex flex-column ga-6">
                   <div class="d-flex flex-wrap ga-4">
@@ -96,7 +98,6 @@
                 </div>
               </v-card-text>
             </v-card>
-          </v-col>
 
           <v-col cols="12" md="4">
             <v-card elevation="16" class="pa-5 neon-card numbers-card" rounded="xl">
@@ -137,7 +138,10 @@ const videoKey = ref(0);
 const isRunning = ref(false);
 const isLoading = ref(true);
 const loadError = ref('');
+const isTransitioning = ref(false);
 let songTimeoutId = null;
+let transitionTimeoutId = null;
+let transitionResetTimeoutId = null;
 
 const songsUrl = '/songs.json';
 
@@ -205,14 +209,35 @@ const scheduleNextSong = () => {
   }, 30000);
 };
 
-const playSongVideo = (song) => {
-  if (!song) {
-    videoSrc.value = '';
-    return;
-  }
+const clearTransitionTimers = () => {
+  clearTimeout(transitionTimeoutId);
+  clearTimeout(transitionResetTimeoutId);
+};
+
+const updateVideoSource = (song) => {
   const url = buildVideoUrl(song);
   videoKey.value += 1;
   videoSrc.value = `${url}&vkey=${videoKey.value}`;
+};
+
+const playSongVideo = (song) => {
+  clearTransitionTimers();
+
+  if (!song) {
+    isTransitioning.value = false;
+    videoSrc.value = '';
+    return;
+  }
+
+  isTransitioning.value = true;
+
+  transitionTimeoutId = setTimeout(() => {
+    updateVideoSource(song);
+  }, 450);
+
+  transitionResetTimeoutId = setTimeout(() => {
+    isTransitioning.value = false;
+  }, 1100);
 };
 
 const playNextSong = () => {
@@ -267,6 +292,8 @@ const pauseBingo = () => {
 
   isRunning.value = false;
   clearTimeout(songTimeoutId);
+  clearTransitionTimers();
+  isTransitioning.value = false;
   videoSrc.value = '';
   videoKey.value += 1;
 };
@@ -274,6 +301,8 @@ const pauseBingo = () => {
 const finishBingo = () => {
   isRunning.value = false;
   clearTimeout(songTimeoutId);
+  clearTransitionTimers();
+  isTransitioning.value = false;
   videoSrc.value = '';
 };
 
@@ -283,6 +312,35 @@ const hasCompleted = computed(
 );
 const remainingSongsCount = computed(() => Math.max(songs.value.length - drawnNumbers.value.length, 0));
 const videoReady = computed(() => Boolean(videoSrc.value));
+const chipStyle = computed(() => {
+  const count = drawnNumbers.value.length;
+
+  if (!count) {
+    return {};
+  }
+
+  let fontSize = 1.2;
+
+  if (count <= 5) {
+    fontSize = 1.8;
+  } else if (count <= 10) {
+    fontSize = 1.5;
+  } else if (count <= 20) {
+    fontSize = 1.25;
+  } else if (count <= 35) {
+    fontSize = 1.1;
+  } else {
+    fontSize = 1;
+  }
+
+  const verticalPadding = 0.35 * fontSize;
+  const horizontalPadding = 0.75 * fontSize;
+
+  return {
+    fontSize: `${fontSize}rem`,
+    padding: `${verticalPadding}rem ${horizontalPadding}rem`,
+  };
+});
 
 onMounted(async () => {
   await fetchSongs();
@@ -290,6 +348,7 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   clearTimeout(songTimeoutId);
+  clearTransitionTimers();
 });
 </script>
 
@@ -421,7 +480,14 @@ onBeforeUnmount(() => {
   line-height: 1.6;
 }
 
-.video-wrapper {
+.waiting-panel {
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.video-stage-wrapper {
+  position: relative;
+  border-radius: 24px;
   overflow: hidden;
   border-radius: 20px;
   box-shadow: 0 25px 45px rgba(8, 0, 30, 0.6);
