@@ -1,0 +1,3 @@
+# This placeholder yarn.lock was added because the execution environment
+# blocks access to the npm registry (HTTP 403). Please run `yarn install`
+# in an environment with registry access to generate the full lockfile.

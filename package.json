@@ -2,6 +2,7 @@
   "name": "custom-bingo",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "yarn@4.9.4",
   "type": "module",
   "scripts": {
     "dev": "vite",
