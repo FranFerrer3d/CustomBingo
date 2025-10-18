@@ -5,49 +5,14 @@
         <div class="lighting lighting--one"></div>
         <div class="lighting lighting--two"></div>
         <v-row justify="center" align="stretch" class="g-8">
-          <v-col cols="12" xl="8">
-            <v-card elevation="22" class="neon-card video-card" rounded="xl">
-              <div class="video-card__header">
-                <div class="neon-title mb-2">
-                  <span class="title-highlight">Hit</span>ster Bingo Musical
-                </div>
-                <div class="neon-subtitle">
-                  Reproduce 30 segundos de canciones aleatorias y descubre quién canta bingo primero.
-                </div>
-              </div>
-              <v-divider class="neon-divider"></v-divider>
-              <div class="video-stage-wrapper">
-                <template v-if="videoReady">
-                  <v-responsive aspect-ratio="16/9" class="video-stage">
-                    <iframe
-                      :key="videoKey"
-                      :src="videoSrc"
-                      title="Reproducción de canción"
-                      allow="autoplay; encrypted-media; accelerometer"
-                      allowfullscreen
-                    ></iframe>
-                  </v-responsive>
-                </template>
-                <v-sheet
-                  v-else
-                  class="d-flex align-center justify-center text-center py-12 neon-panel waiting-panel"
-                  color="rgba(8, 8, 30, 0.75)"
-                  rounded="xl"
-                  elevation="6"
-                >
-                  <div class="text-body-1 font-weight-medium">
-                    Presiona <strong>Iniciar</strong> para comenzar la primera canción del bingo.
-                  </div>
-                </v-sheet>
-                <div class="video-transition" :class="{ 'video-transition--active': isTransitioning }">
-                  <div class="video-transition__label">Preparando la siguiente pista...</div>
-                </div>
-              </div>
-              <div class="equalizer">
-                <span v-for="bar in 5" :key="`bar-${bar}`" class="equalizer__bar"></span>
-              </div>
-            </v-card>
-          </v-col>
+          <v-col cols="12" md="8">
+            <v-card elevation="18" class="pa-6 neon-card control-card" rounded="xl">
+              <v-card-title class="neon-title mb-2">
+                <span class="title-highlight">Hit</span>ster Bingo Musical
+              </v-card-title>
+              <v-card-subtitle class="neon-subtitle mb-6">
+                Reproduce 30 segundos de canciones aleatorias y descubre quién canta bingo primero.
+              </v-card-subtitle>
 
           <v-col cols="12" xl="4" class="d-flex flex-column ga-6">
             <v-card elevation="18" class="pa-6 neon-card control-card" rounded="xl">
@@ -103,10 +68,38 @@
                       </div>
                     </template>
                   </div>
+
+                  <div class="video-wrapper" v-if="videoReady">
+                    <v-responsive aspect-ratio="16/9" class="video-stage">
+                      <iframe
+                        :key="videoKey"
+                        :src="videoSrc"
+                        title="Reproducción de canción"
+                        allow="autoplay; encrypted-media; accelerometer"
+                        allowfullscreen
+                      ></iframe>
+                    </v-responsive>
+                  </div>
+                  <v-sheet
+                    v-else
+                    class="d-flex align-center justify-center text-center py-12 neon-panel waiting-panel"
+                    color="rgba(8, 8, 30, 0.75)"
+                    rounded="xl"
+                    elevation="6"
+                  >
+                    <div class="text-body-1 font-weight-medium">
+                      Presiona <strong>Iniciar</strong> para comenzar la primera canción del bingo.
+                    </div>
+                  </v-sheet>
+
+                  <div class="equalizer">
+                    <span v-for="bar in 5" :key="`bar-${bar}`" class="equalizer__bar"></span>
+                  </div>
                 </div>
               </v-card-text>
             </v-card>
 
+          <v-col cols="12" md="4">
             <v-card elevation="16" class="pa-5 neon-card numbers-card" rounded="xl">
               <v-card-title class="text-h5 font-weight-bold pb-3 numbers-title">
                 Números cantados
@@ -119,7 +112,6 @@
                   color="accent"
                   variant="elevated"
                   class="ma-1 text-subtitle-2 neon-chip"
-                  :style="chipStyle"
                 >
                   {{ number }}
                 </v-chip>
@@ -418,22 +410,6 @@ onBeforeUnmount(() => {
   background: radial-gradient(circle, rgba(0, 255, 255, 0.25), transparent 65%);
 }
 
-.video-card {
-  padding-bottom: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.video-card::after {
-  inset: 10% -30% auto;
-  background: radial-gradient(circle, rgba(95, 243, 255, 0.35), transparent 55%);
-}
-
-.video-card__header {
-  padding: clamp(1.5rem, 2vw, 2.5rem) clamp(1.25rem, 3vw, 2.75rem) 0;
-}
-
 .neon-title {
   font-family: 'Monoton', cursive;
   font-size: clamp(2.4rem, 4vw, 3rem);
@@ -504,12 +480,17 @@ onBeforeUnmount(() => {
   line-height: 1.6;
 }
 
+.waiting-panel {
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
 .video-stage-wrapper {
   position: relative;
   border-radius: 24px;
   overflow: hidden;
-  margin: 0 clamp(1rem, 2vw, 2rem);
-  box-shadow: 0 35px 60px rgba(8, 0, 30, 0.6);
+  border-radius: 20px;
+  box-shadow: 0 25px 45px rgba(8, 0, 30, 0.6);
 }
 
 .video-stage {
@@ -518,56 +499,11 @@ onBeforeUnmount(() => {
   background: linear-gradient(145deg, rgba(12, 5, 46, 0.9), rgba(27, 9, 66, 0.8));
 }
 
-.video-stage-wrapper > .v-sheet {
-  width: 100%;
-}
-
-.video-stage iframe {
-  border: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.video-transition {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at center, rgba(12, 0, 40, 0), rgba(6, 0, 20, 0.85));
-  opacity: 0;
-  transition: opacity 0.45s ease;
-  pointer-events: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
-
-.video-transition--active {
-  opacity: 1;
-  transition-duration: 0.35s;
-}
-
-.video-transition__label {
-  font-size: clamp(1.1rem, 2vw, 1.4rem);
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: rgba(198, 255, 255, 0.85);
-  text-shadow: 0 0 18px rgba(95, 243, 255, 0.55);
-  opacity: 0;
-  transform: translateY(12px);
-  transition: opacity 0.35s ease, transform 0.35s ease;
-}
-
-.video-transition--active .video-transition__label {
-  opacity: 1;
-  transform: translateY(0);
-}
-
 .equalizer {
   display: flex;
   justify-content: center;
   gap: 10px;
-  margin-top: 24px;
+  margin-top: 10px;
 }
 
 .equalizer__bar {
@@ -600,7 +536,6 @@ onBeforeUnmount(() => {
   height: 100%;
   display: flex;
   flex-direction: column;
-  flex: 1;
 }
 
 .numbers-title {
@@ -618,7 +553,6 @@ onBeforeUnmount(() => {
   display: flex;
   flex-wrap: wrap;
   gap: 0.45rem;
-  justify-content: center;
 }
 
 .neon-chip {
@@ -626,11 +560,6 @@ onBeforeUnmount(() => {
   border: 1px solid rgba(255, 255, 255, 0.25);
   color: #fdfcff !important;
   box-shadow: 0 12px 24px rgba(69, 246, 255, 0.22);
-  transition: transform 0.2s ease;
-}
-
-.neon-chip:hover {
-  transform: translateY(-3px) scale(1.03);
 }
 
 :deep(.v-alert) {
@@ -668,10 +597,6 @@ onBeforeUnmount(() => {
   .lighting--two {
     opacity: 0.6;
     filter: blur(160px);
-  }
-
-  .video-stage-wrapper {
-    margin-inline: clamp(0.5rem, 4vw, 1.5rem);
   }
 }
 </style>
