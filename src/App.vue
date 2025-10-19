@@ -6,7 +6,7 @@
         <div class="lighting lighting--two"></div>
 
         <v-row justify="center" align="start" class="g-8 center-stage">
-          <v-col cols="12" md="9" lg="10">
+          <v-col cols="12" md="9" lg="8">
             <v-card
               elevation="18"
               class="pa-4 neon-card control-card"
@@ -52,7 +52,7 @@
             </v-card>
           </v-col>
 
-          <v-col cols="12" md="3" lg="2">
+          <v-col cols="12" md="3" lg="4">
             <v-card
               elevation="16"
               class="pa-5 neon-card numbers-card"
@@ -104,9 +104,56 @@
                   class="glow-btn"
                   :disabled="!canStart || isRunning"
                   @click="startBingo"
-                  >Iniciar</v-btn
                 >
+                  Iniciar
+                </v-btn>
+
+                <!-- Botón dinámico "Línea / Confirmar? / Bingo!" -->
+                <v-fade-transition mode="out-in">
+                  <v-btn
+                    :key="buttonState"
+                    :color="buttonColor"
+                    size="large"
+                    class="glow-btn"
+                    :disabled="buttonState === 'confirmar' && !canStart"
+                    @click="onLineaButtonClick"
+                  >
+                    {{ buttonLabel }}
+                  </v-btn>
+                </v-fade-transition>
+
+                <!-- (mantengo el botón Pausa original) -->
+                <v-btn
+                  color="secondary"
+                  size="large"
+                  class="glow-btn glow-btn--outline"
+                  variant="outlined"
+                  :disabled="!isRunning"
+                  @click="pauseBingo"
+                >
+                  Pausa
+                </v-btn>
               </div>
+              <!-- diálogo de confirmación reutilizable -->
+              <v-dialog v-model="dialogOpen" max-width="420">
+                <v-card>
+                  <v-card-title class="text-h6">¿Estás seguro?</v-card-title>
+                  <v-card-text>
+                    <div v-if="pendingFor === 'linea'">
+                      Confirmar línea pausará temporalmente la partida y, si
+                      confirmas, se marcará la línea y se reanudará la
+                      reproducción.
+                    </div>
+                    <div v-else-if="pendingFor === 'bingo'">
+                      Confirmar bingo terminará la partida si aceptas.
+                    </div>
+                  </v-card-text>
+                  <v-card-actions class="justify-end">
+                    <v-btn text @click="onDialogNo">No</v-btn>
+                    <v-btn color="primary" @click="onDialogYes">Sí</v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
             </v-card>
           </v-col>
         </v-row>
@@ -116,7 +163,10 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { defineEmits } from "vue";
+
+const emit = defineEmits(["game-ended"]);
 
 const songs = ref([]);
 const drawnNumbers = ref([]);
@@ -184,13 +234,46 @@ const buildVideoUrl = (song) => {
   return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
 };
 
-const scheduleNextSong = () => {
+/* scheduling: ahora soporta pausa/continuación con remaining time */
+const DEFAULT_SCHEDULE_DELAY = 20000;
+let songDeadline = ref(null);
+let songRemaining = ref(0);
+
+const scheduleNextSong = (delay = DEFAULT_SCHEDULE_DELAY) => {
   clearTimeout(songTimeoutId);
+  songRemaining.value = delay;
+  songDeadline.value = Date.now() + delay;
   songTimeoutId = setTimeout(() => {
+    songTimeoutId = null;
+    songRemaining.value = 0;
+    songDeadline.value = null;
     if (isRunning.value) {
       playNextSong();
     }
-  }, 30000);
+  }, delay);
+};
+
+const pauseSchedule = () => {
+  if (songTimeoutId) {
+    clearTimeout(songTimeoutId);
+    songTimeoutId = null;
+    if (songDeadline.value) {
+      songRemaining.value = Math.max(0, songDeadline.value - Date.now());
+    }
+    songDeadline.value = null;
+  }
+};
+
+const resumeSchedule = () => {
+  // solo reanuda si la partida está en marcha
+  if (!isRunning.value) return;
+  const remaining = Math.max(0, songRemaining.value || 0);
+  if (remaining > 50) {
+    scheduleNextSong(remaining);
+  } else {
+    // si ya expiró o queda muy poco, programar el delay por defecto
+    scheduleNextSong(DEFAULT_SCHEDULE_DELAY);
+  }
 };
 
 const playSongVideo = (song) => {
@@ -255,15 +338,21 @@ const pauseBingo = () => {
   if (!isRunning.value) return;
   isRunning.value = false;
   clearTimeout(songTimeoutId);
+  songTimeoutId = null;
   // detener reproducción limpiando src para que iframe deje de reproducir
   videoSrc.value = "";
   videoKey.value += 1;
+  songRemaining.value = 0;
+  songDeadline.value = null;
 };
 
 const finishBingo = () => {
   isRunning.value = false;
   clearTimeout(songTimeoutId);
+  songTimeoutId = null;
   videoSrc.value = "";
+  songRemaining.value = 0;
+  songDeadline.value = null;
 };
 
 // computeds
@@ -299,89 +388,229 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   clearTimeout(songTimeoutId);
 });
+
+/* --- Estado del botón Línea / Confirmar? / Bingo! --- */
+const buttonState = ref("linea"); // 'linea' | 'confirmar' | 'bingo'
+const dialogOpen = ref(false);
+const pendingFor = ref(null); // 'linea' | 'bingo' cuando se abre el modal
+const pausedByLinea = ref(false);
+
+const buttonLabel = computed(() => {
+  switch (buttonState.value) {
+    case "linea":
+      return "Línea";
+    case "confirmar":
+      return "Confirmar?";
+    case "bingo":
+      return "Bingo!";
+    default:
+      return "Línea";
+  }
+});
+
+const buttonColor = computed(() => {
+  switch (buttonState.value) {
+    case "linea":
+      return "primary"; // azul
+    case "confirmar":
+      return "warning"; // amarillo
+    case "bingo":
+      return "error"; // rojo
+    default:
+      return "primary";
+  }
+});
+
+/* --- funciones para flujo Línea / Confirmación / Bingo --- */
+function pauseForLinea() {
+  // pausa la reproducción actual manteniendo currentSong para poder reanudar
+  if (videoSrc.value) {
+    pausedByLinea.value = true;
+    // pausa schedule y reproducción, pero conserva currentSong
+    pauseSchedule();
+    // para detener audio visual, limpiamos src (como ya hacía pauseBingo)
+    // pero no alteramos isRunning (dejamos isRunning true para indicar partida en curso)
+    videoSrc.value = "";
+    videoKey.value++;
+  }
+}
+
+function resumeAfterLinea() {
+  if (currentSong.value && currentSong.value.url) {
+    // reponer la URL para que vuelva a reproducir la canción actual
+    videoSrc.value = buildVideoUrl(currentSong.value);
+    videoKey.value++;
+    isRunning.value = true;
+    pausedByLinea.value = false;
+    // NO llamar aquí a scheduleNextSong: lo hará resumeSchedule al cerrar el modal
+  }
+}
+
+function onLineaButtonClick() {
+  if (buttonState.value === "linea") {
+    // primer click: pausar y pasar a confirmar
+    pauseForLinea();
+    buttonState.value = "confirmar";
+    pendingFor.value = "linea";
+    return;
+  }
+
+  if (buttonState.value === "confirmar") {
+    // abrir modal de confirmación; pendingFor ya debe indicar si viene de 'linea' o 'bingo'
+    dialogOpen.value = true;
+    return;
+  }
+
+  if (buttonState.value === "bingo") {
+    // pulsar Bingo! vuelve a mostrar Confirmar? con intención de terminar si confirman
+    buttonState.value = "confirmar";
+    pendingFor.value = "bingo";
+    dialogOpen.value = true;
+    return;
+  }
+}
+
+function onDialogNo() {
+  // cerrar modal, no cambiar estado (se queda en 'confirmar' y la partida sigue pausada si venía de linea)
+  dialogOpen.value = false;
+}
+
+function onDialogYes() {
+  dialogOpen.value = false;
+  if (pendingFor.value === "linea") {
+    // confirmar línea: reanudar y cambiar botón a Bingo!
+    resumeAfterLinea();
+    buttonState.value = "bingo";
+    pendingFor.value = null;
+    return;
+  }
+
+  if (pendingFor.value === "bingo") {
+    // confirmar bingo: terminar juego
+    endGame();
+    pendingFor.value = null;
+    return;
+  }
+}
+
+function endGame() {
+  // simulación de fin de juego
+  finishBingo();
+  emit("game-ended");
+  buttonState.value = "linea";
+  dialogOpen.value = false;
+  pausedByLinea.value = false;
+}
+
+/* --- watch para pausar/resumir schedule cuando se abre/cierra el modal --- */
+watch(
+  dialogOpen,
+  (open) => {
+    if (open) {
+      // detener timeout mientras el modal está abierto
+      pauseSchedule();
+    } else {
+      // al cerrarse el modal, si la partida sigue en marcha reanudar o finalizar según estado
+      // (onDialogYes ya habrá ejecutado endGame o resumeAfterLinea cuando corresponda)
+      if (isRunning.value) {
+        // Si hemos reanudado la reproducción (resumeAfterLinea fue llamado), reanudar schedule
+        // con el tiempo restante capturado al abrir el modal.
+        resumeSchedule();
+      } else {
+        // si no está en marcha, limpiar posibles timeouts
+        clearTimeout(songTimeoutId);
+        songTimeoutId = null;
+      }
+    }
+  },
+  { immediate: false }
+);
 </script>
 
 <style scoped>
+/* palette: suaves blancos, verdes y dorados pastel */
+
+/* base */
 .neon-app {
   background: transparent;
-  color: #f7f5ff;
+  color: #233427; /* texto base: verde oscuro suave */
 }
 
+/* contenedor principal: suave degradado crema -> verde pastel */
 .neon-container {
   position: relative;
   isolation: isolate;
   min-height: 100vh;
   overflow: hidden;
+  background: linear-gradient(180deg, #fbf8f2 0%, #f2f7ee 45%, #e9f6ea 100%);
 }
 
-.lighting {
-  position: absolute;
-  width: 320px;
-  height: 320px;
-  border-radius: 50%;
-  filter: blur(120px);
-  z-index: 0;
-}
+/* luces decorativas: verdes y doradas suaves */
 .lighting--one {
   top: -120px;
   left: -80px;
-  background: rgba(255, 0, 128, 0.55);
+  background: rgba(183, 230, 194, 0.55); /* verde pastel */
 }
 .lighting--two {
   right: -120px;
   bottom: -120px;
-  background: rgba(0, 200, 255, 0.45);
+  background: rgba(255, 234, 172, 0.45); /* dorado pastel */
 }
 
+/* tarjetas: mantener profundidad pero con tonos crema/verde suave */
 .neon-card {
   position: relative;
   overflow: hidden;
   background: linear-gradient(
     145deg,
-    rgba(22, 12, 61, 0.92),
-    rgba(44, 16, 106, 0.8)
+    rgba(255, 252, 244, 0.95),
+    rgba(241, 249, 240, 0.92)
   );
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 25px 45px rgba(2, 0, 36, 0.45),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(18px);
+  border: 1px solid rgba(36, 61, 45, 0.06);
+  box-shadow: 0 18px 40px rgba(36, 61, 45, 0.06),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
   z-index: 1;
 }
 
+/* título: blanco suave + acento dorado */
 .neon-title {
   font-family: "Monoton", cursive;
-  font-size: clamp(2.4rem, 4vw, 3rem);
-  letter-spacing: 0.25em;
-  color: #ff7cf4;
-  text-shadow: 0 0 12px rgba(255, 171, 255, 0.9);
+  font-size: clamp(2.2rem, 4vw, 2.8rem);
+  letter-spacing: 0.22em;
+  color: #1f643a;
+  text-shadow: 0 6px 18px rgba(240, 225, 181, 0.18);
   display: flex;
   gap: 0.45rem;
 }
 .title-highlight {
-  color: #45f6ff;
-  text-shadow: 0 0 12px rgba(69, 246, 255, 0.9);
+  color: #d4b86b; /* acento dorado */
+  text-shadow: 0 8px 36px rgba(212, 184, 107, 0.14);
 }
 
+/* botones: gradiente pastel dorado -> verde */
 .glow-btn {
   border-radius: 999px;
   padding-inline: 2.75rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  background: linear-gradient(135deg, #ff008c, #ff5f5f);
-  color: #fff !important;
-  box-shadow: 0 18px 35px rgba(255, 0, 140, 0.35);
+  /* background: linear-gradient(135deg, #f7e8bf 0%, #dff2e1 100%); */
+  background: #1f643a !important;
+  box-shadow: 0 12px 28px rgba(36, 61, 45, 0.08);
+  border: 1px solid rgba(36, 61, 45, 0.06);
 }
 .glow-btn--outline {
   background: transparent;
-  color: #5ff3ff !important;
-  border: 2px solid rgba(95, 243, 255, 0.65);
+  color: #2b5d45 !important;
+  border: 2px solid rgba(43, 93, 69, 0.12);
 }
 
+/* video wrapper: conservar forma pero más claro */
 .video-wrapper {
   overflow: hidden;
-  border-radius: 20px;
-  box-shadow: 0 25px 45px rgba(8, 0, 30, 0.6);
+  border-radius: 18px;
+  box-shadow: 0 20px 40px rgba(36, 61, 45, 0.06);
   width: 100%;
   height: min(82vh, 1000px);
   min-height: 480px;
@@ -389,22 +618,16 @@ onBeforeUnmount(() => {
   margin: 0 auto;
 }
 
-.center-stage {
-  min-height: auto;
-  align-items: flex-start;
-  justify-content: center;
-  padding-top: 4px;
-}
-
+/* video stage: sutil fondo verdoso */
 .video-stage {
   height: 100%;
   width: 100%;
   border-radius: inherit;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(36, 61, 45, 0.03);
   background: linear-gradient(
-    145deg,
-    rgba(12, 5, 46, 0.9),
-    rgba(27, 9, 66, 0.8)
+    180deg,
+    rgba(241, 249, 240, 0.9),
+    rgba(233, 246, 232, 0.85)
   );
   overflow: hidden;
   display: flex;
@@ -412,40 +635,72 @@ onBeforeUnmount(() => {
   justify-content: center;
 }
 
+/* iframe */
 .video-iframe {
   width: 100% !important;
   height: 100% !important;
   display: block;
   border: 0;
   min-height: 420px;
-  background: linear-gradient(
-    180deg,
-    rgba(10, 10, 20, 0.6),
-    rgba(20, 15, 40, 0.6)
-  );
+  background: transparent;
   will-change: opacity, transform;
 }
 
-/* numbers column and chips */
-.numbers-col {
-  display: flex;
-  align-items: flex-start;
-}
+/* columna números: tarjeta más neutra con borde dorado sutil */
 .numbers-card {
   height: 100%;
   display: flex;
   flex-direction: column;
   max-height: calc(100vh - 120px);
   overflow: hidden;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 250, 0.95),
+    rgba(246, 251, 244, 0.96)
+  );
+  border: 1px solid rgba(212, 184, 107, 0.06);
 }
-.numbers-grid {
+
+/* bloque "Sonando ahora": fondo blanco cremoso, número en verde oscuro */
+.current-number-block {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-  justify-content: flex-start;
-  align-items: flex-start;
-  --chip-size: 88px;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 1rem 0.8rem;
+  border-radius: 12px;
+  text-align: center;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 250, 0.98),
+    rgba(250, 252, 246, 0.96)
+  );
+  border: 1px solid rgba(36, 61, 45, 0.06);
+  box-shadow: 0 8px 30px rgba(36, 61, 45, 0.04);
 }
+.current-number-label {
+  font-size: 0.75rem;
+  color: rgba(43, 93, 69, 0.75);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.current-number-value {
+  font-weight: 900;
+  color: #21422e; /* verde oscuro para destacar */
+  line-height: 1;
+  font-size: clamp(6.6rem, 17.2vw, 13.8rem);
+  text-shadow: 0 10px 30px rgba(36, 61, 45, 0.06);
+}
+.current-number-title {
+  font-size: 0.9rem;
+  color: rgba(43, 93, 69, 0.85);
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* chips: fondo dorado pastel con texto verde */
 .neon-chip {
   min-width: var(--chip-size, 88px);
   max-width: calc(var(--chip-size, 88px) * 1.4);
@@ -454,67 +709,41 @@ onBeforeUnmount(() => {
   align-items: center;
   padding: 0.45rem 0.75rem;
   font-size: clamp(0.8rem, calc(var(--chip-size, 88px) / 12), 1.05rem);
-  border-radius: 12px;
+  border-radius: 10px;
   transition: all 180ms ease;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  background: linear-gradient(180deg, #fff4d6 0%, #f6e8bf 100%);
+  color: #22422f;
+  border: 1px solid rgba(36, 61, 45, 0.06);
+  box-shadow: 0 8px 18px rgba(36, 61, 45, 0.04);
 }
 
-.current-number-block {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 1rem 0.8rem;
-  border-radius: 14px;
-  text-align: center;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.03),
-    rgba(255, 255, 255, 0.01)
-  );
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
-}
-
-.current-number-label {
-  font-size: 0.75rem;
-  color: rgba(225, 230, 255, 0.75);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-.current-number-value {
-  font-weight: 800;
-  color: #fff;
-  line-height: 1;
-  font-size: clamp(2.6rem, 6vw, 4.8rem);
-  text-shadow: 0 6px 30px rgba(69, 246, 255, 0.12);
-}
-.current-number-title {
-  font-size: 0.9rem;
-  color: rgba(220, 225, 255, 0.9);
-  max-width: 220px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
+/* controls spacing */
 .numbers-controls {
   gap: 0.75rem;
   margin-top: 1rem;
 }
 
-/* transitions */
+/* pequeño ajuste visual para el botón dinámico */
+.numbers-controls .v-btn[variant="outlined"] {
+  min-width: 110px;
+}
+.numbers-controls .glow-btn {
+  min-width: 140px;
+}
+
+/* transitions: mantener comportamiento, ajustar sombras suaves */
 .crossfade-enter-active,
 .crossfade-leave-active {
-  transition: opacity 700ms cubic-bezier(0.22, 1, 0.36, 1),
-    transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 820ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 820ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .crossfade-enter-from,
 .crossfade-leave-to {
   opacity: 0;
-  transform: scale(0.992);
+  transform: scale(0.996);
 }
 .crossfade-enter-to,
 .crossfade-leave-from {
@@ -522,14 +751,15 @@ onBeforeUnmount(() => {
   transform: scale(1);
 }
 
+/* other transitions unchanged */
 .slide-fade-enter-active,
 .slide-fade-leave-active {
-  transition: opacity 520ms cubic-bezier(0.22, 1, 0.36, 1),
-    transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 480ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 480ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .slide-fade-enter-from {
   opacity: 0;
-  transform: translateY(-10px);
+  transform: translateY(-8px);
 }
 .slide-fade-enter-to {
   opacity: 1;
@@ -541,14 +771,14 @@ onBeforeUnmount(() => {
 }
 
 .chip-pop-enter-active {
-  transition: transform 360ms cubic-bezier(0.22, 1, 0.36, 1), opacity 360ms ease;
+  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1), opacity 300ms ease;
 }
 .chip-pop-leave-active {
-  transition: opacity 260ms ease, transform 260ms ease;
+  transition: opacity 220ms ease, transform 220ms ease;
 }
 .chip-pop-enter-from {
   opacity: 0;
-  transform: translateY(-6px) scale(0.94);
+  transform: translateY(-6px) scale(0.96);
 }
 .chip-pop-enter-to {
   opacity: 1;
@@ -556,9 +786,10 @@ onBeforeUnmount(() => {
 }
 .chip-pop-leave-to {
   opacity: 0;
-  transform: translateY(-6px) scale(0.96);
+  transform: translateY(-6px) scale(0.98);
 }
 
+/* responsive tweaks */
 @media (max-width: 960px) {
   .video-wrapper {
     height: 46vh;
