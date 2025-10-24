@@ -3,31 +3,31 @@
     "nombre": "Pop",
     "url": "https://www.youtube.com/watch?v=wNgETv6Pn7E",
     "numero": 1,
-    "segundoInicial": 42
+    "segundoInicial": 105
   },
   {
     "nombre": "Búscate un hombre que te quiera",
-    "url": "",
+    "url": "https://www.youtube.com/watch?v=FpUa4z2MpKM",
     "numero": 2,
-    "segundoInicial": 38
+    "segundoInicial": 50
   },
   {
     "nombre": "Fiesta Pagana",
-    "url": "https://www.youtube.com/watch?v=Cz5o3bVE5rY",
+    "url": "https://www.youtube.com/watch?v=nkpq_0jzITI&list=RDnkpq_0jzITI&start_radio=1",
     "numero": 3,
-    "segundoInicial": 109
+    "segundoInicial": 155
   },
   {
     "nombre": "El Secreto de las Tortugas",
     "url": "https://www.youtube.com/watch?v=S725EmUhbmk",
     "numero": 4,
-    "segundoInicial": 79
+    "segundoInicial": 305
   },
   {
     "nombre": "La Posada de los Muertos",
-    "url": "https://www.youtube.com/watch?v=9k4nAM3Ao0g",
+    "url": "https://www.youtube.com/watch?v=IGEskjk2hCo",
     "numero": 5,
-    "segundoInicial": 73
+    "segundoInicial": 156
   },
   {
     "nombre": "Marta, Sebas, Guille y los demás",
@@ -37,7 +37,7 @@
   },
   {
     "nombre": "La Madre de José",
-    "url": "https://www.youtube.com/watch?v=9qS2N0pP1N0",
+    "url": "https://www.youtube.com/watch?v=GBw8-_INgrU",
     "numero": 7,
     "segundoInicial": 41
   },
@@ -73,7 +73,7 @@
   },
   {
     "nombre": "Digimon Opening",
-    "url": "",
+    "url": "https://youtube.com/watch?v=UXwunDD5Lm8&feature=shared",
     "numero": 13,
     "segundoInicial": 53
   },
@@ -81,7 +81,7 @@
     "nombre": "Bailando",
     "url": "https://www.youtube.com/watch?v=NUsoVlDFqZg",
     "numero": 14,
-    "segundoInicial": 19
+    "segundoInicial": 73
   },
   {
     "nombre": "Luz, Fuego, Destrucción (Chala Head-Cha-La)",
@@ -117,7 +117,7 @@
     "nombre": "Wannabe",
     "url": "https://www.youtube.com/watch?v=gJLIiF15wjQ",
     "numero": 20,
-    "segundoInicial": 35
+    "segundoInicial": 48
   },
   {
     "nombre": "Lady Marmalade - From \"Moulin Rouge\" Soundtrack",
@@ -165,11 +165,11 @@
     "nombre": "Sarandonga",
     "url": "https://www.youtube.com/watch?v=p-9CMPBaE14",
     "numero": 28,
-    "segundoInicial": 6
+    "segundoInicial": 38
   },
   {
     "nombre": "Waka Waka (This Time for Africa)",
-    "url": "https://www.youtube.com/watch?v=pRpeEdMmmQ0",
+    "url": "https://www.youtube.com/watch?v=dzsuE5ugxf4",
     "numero": 29,
     "segundoInicial": 50
   },
@@ -267,7 +267,7 @@
     "nombre": "Dance Macabre",
     "url": "https://www.youtube.com/watch?v=7Gr63DiEUxw",
     "numero": 45,
-    "segundoInicial": 60
+    "segundoInicial": 142
   },
   {
     "nombre": "Stand By",
@@ -277,7 +277,7 @@
   },
   {
     "nombre": "Tu Calorro",
-    "url": "https://www.youtube.com/watch?v=uBFdSyDkPOU",
+    "url": "https://youtu.be/KV_t_4910OI?si=zFKqH4b4r9Apc_aF",
     "numero": 47,
     "segundoInicial": 49
   },
@@ -325,7 +325,7 @@
   },
   {
     "nombre": "Mediterrània",
-    "url": "",
+    "url": "https://youtu.be/AQcRLOhO3Ng?si=L6poHEAph-UqdSgV",
     "numero": 55,
     "segundoInicial": 43
   },
@@ -349,7 +349,7 @@
   },
   {
     "nombre": "De cero a héroe",
-    "url": "",
+    "url": "https://youtu.be/R9fhzN_NMkM?si=Hwn3LYZuBJXH-x7Q",
     "numero": 59,
     "segundoInicial": 75
   },
@@ -387,7 +387,7 @@
     "nombre": "Bailando por Ahí",
     "url": "https://www.youtube.com/watch?v=9m6ogS57sc8",
     "numero": 65,
-    "segundoInicial": 0
+    "segundoInicial": 12
   },
   {
     "nombre": "Through The Fire And Flames",
