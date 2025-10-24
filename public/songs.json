@@ -3,7 +3,7 @@
     "nombre": "Pop",
     "url": "https://www.youtube.com/watch?v=wNgETv6Pn7E",
     "numero": 1,
-    "segundoInicial": 105
+    "segundoInicial": 115
   },
   {
     "nombre": "Búscate un hombre que te quiera",
@@ -21,13 +21,13 @@
     "nombre": "El Secreto de las Tortugas",
     "url": "https://www.youtube.com/watch?v=S725EmUhbmk",
     "numero": 4,
-    "segundoInicial": 305
+    "segundoInicial": 93
   },
   {
     "nombre": "La Posada de los Muertos",
     "url": "https://www.youtube.com/watch?v=IGEskjk2hCo",
     "numero": 5,
-    "segundoInicial": 156
+    "segundoInicial": 93
   },
   {
     "nombre": "Marta, Sebas, Guille y los demás",
@@ -54,20 +54,20 @@
     "segundoInicial": 71
   },
   {
-    "nombre": "Blanco y Negro",
-    "url": "https://www.youtube.com/watch?v=u1G9U6Y4VQk",
+    "nombre": "On The Way",
+    "url": "https://youtu.be/DCCRNzKvWRg?si=lSJqMQBD68ey9V8X",
     "numero": 10,
-    "segundoInicial": 53
+    "segundoInicial": 60
   },
   {
     "nombre": "Devuélveme a mi chica",
-    "url": "https://www.youtube.com/watch?v=_6G9wqR0o5s",
+    "url": "https://www.youtube.com/watch?v=zzIOxHIZEis",
     "numero": 11,
-    "segundoInicial": 55
+    "segundoInicial": 54
   },
   {
-    "nombre": "Pokémon (Hazte Con Todos) Opening",
-    "url": "https://www.youtube.com/watch?v=XNF_xnmKuRI",
+    "nombre": "Pokémon Opening",
+    "url": "https://youtu.be/a-89TayFuos?si=p0f_dCzL_EROFpYZ",
     "numero": 12,
     "segundoInicial": 32
   },
@@ -84,7 +84,7 @@
     "segundoInicial": 73
   },
   {
-    "nombre": "Luz, Fuego, Destrucción (Chala Head-Cha-La)",
+    "nombre": "Chala Head-Cha-La",
     "url": "https://www.youtube.com/watch?v=VdnSAZjOl1Q",
     "numero": 15,
     "segundoInicial": 0
@@ -211,7 +211,7 @@
   },
   {
     "nombre": "Hijo de Hombre (Tarzán)",
-    "url": "https://www.youtube.com/watch?v=5k8NySrpplY",
+    "url": "https://youtube.com/watch?v=GTh-KxTmiG0&feature=shared",
     "numero": 36,
     "segundoInicial": 40
   },
@@ -261,7 +261,7 @@
     "nombre": "The Number of the Beast",
     "url": "https://www.youtube.com/watch?v=WxnN05vOuSM",
     "numero": 44,
-    "segundoInicial": 52
+    "segundoInicial": 89
   },
   {
     "nombre": "Dance Macabre",
@@ -270,10 +270,10 @@
     "segundoInicial": 142
   },
   {
-    "nombre": "Stand By",
-    "url": "https://www.youtube.com/watch?v=K2WPRoqvQH8",
+    "nombre": "So Payaso!",
+    "url": "https://youtu.be/1D3tSv9LQlE?si=YUJ1zwMfeNpPI-Ok",
     "numero": 46,
-    "segundoInicial": 130
+    "segundoInicial": 53
   },
   {
     "nombre": "Tu Calorro",
@@ -319,7 +319,7 @@
   },
   {
     "nombre": "Princesas",
-    "url": "https://www.youtube.com/watch?v=1YgnSUZXoq0",
+    "url": "https://www.youtube.com/watch?v=A9UdCLGvjXg",
     "numero": 54,
     "segundoInicial": 53
   },
@@ -331,15 +331,15 @@
   },
   {
     "nombre": "Flojos de pantalón",
-    "url": "https://www.youtube.com/watch?v=3q5bU1P6oBk",
+    "url": "https://www.youtube.com/watch?v=CKMDB5MG6hc",
     "numero": 56,
-    "segundoInicial": 137
+    "segundoInicial": 60
   },
   {
     "nombre": "Beat It",
-    "url": "https://www.youtube.com/watch?v=oRdxUFDoQe0",
+    "url": "https://www.youtube.com/watch?v=kaPUTCErvu0",
     "numero": 57,
-    "segundoInicial": 112
+    "segundoInicial": 191
   },
   {
     "nombre": "Enamorado de la moda juvenil",
@@ -366,8 +366,8 @@
     "segundoInicial": 67
   },
   {
-    "nombre": "Rodamos",
-    "url": "https://www.youtube.com/watch?v=I2HoC0rE3gM",
+    "nombre": "Malcolm in the Middle",
+    "url": "https://www.youtube.com/watch?v=SBv4FLKPcMc",
     "numero": 62,
     "segundoInicial": 35
   },
@@ -375,13 +375,13 @@
     "nombre": "Una Lluna a L'Aigua",
     "url": "https://www.youtube.com/watch?v=BeH2eH9iPw4",
     "numero": 63,
-    "segundoInicial": 1
+    "segundoInicial": 122
   },
   {
     "nombre": "Uno más uno son 7",
-    "url": "https://www.youtube.com/watch?v=Qx6uZC8Fpn0",
+    "url": "https://www.youtube.com/watch?v=TnKyvgoO_VI",
     "numero": 64,
-    "segundoInicial": 43
+    "segundoInicial": 27
   },
   {
     "nombre": "Bailando por Ahí",
@@ -435,7 +435,7 @@
     "nombre": "Tengo Que Impedir Esa Boda",
     "url": "https://www.youtube.com/watch?v=XR0UCfbo3Mo",
     "numero": 73,
-    "segundoInicial": 0
+    "segundoInicial": 10
   },
   {
     "nombre": "Milionària",
@@ -445,9 +445,9 @@
   },
   {
     "nombre": "DESPECHÁ",
-    "url": "https://www.youtube.com/watch?v=OQ1CwPhE8KQ",
+    "url": "https://youtu.be/5g2hT4GmAGU?si=P0tXtxsQUK5ues1D",
     "numero": 75,
-    "segundoInicial": 0
+    "segundoInicial": 21
   },
   {
     "nombre": "Shake It Off",
@@ -466,5 +466,78 @@
     "url": "https://www.youtube.com/watch?v=CYHGh6lmSbo",
     "numero": 78,
     "segundoInicial": 112
+  },
+  {
+    "nombre": "Fito & Fitipaldis - Por la boca vive el pez",
+    "url": "https://youtu.be/iUXs4Nt3Y7Y?si=ptvvLi7ly1lRVrmk",
+    "numero": 79,
+    "segundoInicial": 70
+  },
+  {
+    "nombre": "Queen - We Will Rock You",
+    "url": "https://youtu.be/-tJYN-eG1zk?si=BfK3idZA51enXsFF",
+    "numero": 80,
+    "segundoInicial": 37
+  },
+  {
+    "nombre": "Måneskin - Beggin’",
+    "url": "https://www.youtube.com/watch?v=Xg72z08aTXY",
+    "numero": 81,
+    "segundoInicial": 68
+  },
+  {
+    "nombre": "Imagine Dragons - Thunder",
+    "url": "https://youtu.be/fKopy74weus?si=YQEBCRZi28DlJBO4",
+    "numero": 82,
+    "segundoInicial": 45
+  },
+  {
+    "nombre": "Sobreviviré - Monica Naranjo",
+    "url": "https://www.youtube.com/watch?v=xErS7G3-tCQ",
+    "numero": 83,
+    "segundoInicial": 80
+  },
+  {
+    "nombre": "Ed Sheeran - Remember The Name",
+    "url": "https://www.youtube.com/watch?v=NYtoyvayPHs",
+    "numero": 84,
+    "segundoInicial": 56
+  },
+  {
+    "nombre": "Ed Sheeran - Remember The Name",
+    "url": "https://www.youtube.com/watch?v=NYtoyvayPHs",
+    "numero": 85,
+    "segundoInicial": 56
+  },
+  {
+    "nombre": "Ed Sheeran - Remember The Name",
+    "url": "https://www.youtube.com/watch?v=NYtoyvayPHs",
+    "numero": 86,
+    "segundoInicial": 56
+  },
+  {
+    "nombre": "Aerosmith - I Don't Want to Miss a Thing",
+    "url": "https://www.youtube.com/watch?v=NYtoyvayPHs",
+    "numero": 87,
+    "segundoInicial": 127
+  },
+  {
+    "nombre": "Guns N' Roses - Welcome To The Jungle",
+    "url": "https://www.youtube.com/watch?v=o1tj2zJ2Wvg",
+    "numero": 88,
+    "segundoInicial": 44
+  },
+  {
+    "nombre": "Sabrina Carpenter - Espresso",
+    "url": "https://www.youtube.com/watch?v=eVli-tstM5E",
+    "numero": 89,
+    "segundoInicial": 80
+  },
+  {
+    "nombre": "Heavy Is The Crown ft. Linkin Park",
+    "url": "https://www.youtube.com/watch?v=5FrhtahQiRc",
+    "numero": 90,
+    "segundoInicial": 66
   }
+
 ]
